@@ -1,145 +1,346 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="zh-CN">
 <head>
-  <title>随机美食选择器</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 600px;
-      margin: 20px auto;
-      padding: 20px;
-      background-color: #f0f0f0;
-      text-align: center;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能美食决策助手</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #ff6b6b;
+            --secondary: #4ecdc4;
+            --dark: #2d3436;
+        }
 
-   .container {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
+        body {
+            font-family: 'Segoe UI', system-ui;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--dark);
+        }
 
-    h1 {
-      color: #4CAF50;
-      font-size: 2.5em;
-      margin-bottom: 20px;
-    }
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 800px;
+            backdrop-filter: blur(10px);
+        }
 
-    #result {
-      font-size: 24px;
-      margin: 20px 0;
-      padding: 15px;
-      background: #fff3cd;
-      border-radius: 5px;
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.5s ease, transform 0.5s ease, background-color 0.5s ease;
-    }
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
 
-    #result.show {
-      opacity: 1;
-      transform: translateY(0);
-      background-color: #d4edda;
-    }
+        .title {
+            font-size: 2.5em;
+            color: var(--primary);
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
 
-    button {
-      padding: 10px 20px;
-      margin: 10px;
-      background: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: background 0.3s ease, transform 0.2s ease;
-    }
+        .tagline {
+            color: #666;
+            margin-top: 0.5rem;
+        }
 
-    button:hover {
-      background: #45a049;
-      transform: scale(1.05);
-    }
+        .card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin: 1rem 0;
+            transition: transform 0.3s ease;
+        }
 
-    button:active {
-      transform: scale(0.9);
-    }
+        .card:hover {
+            transform: translateY(-5px);
+        }
 
-    @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
 
-      100% {
-        transform: rotate(360deg);
-      }
-    }
+        .category-tabs {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 1rem 0;
+        }
 
-   .spinner {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 3px solid rgba(0, 0, 0, 0.1);
-      border-top: 3px solid #4CAF50;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-left: 10px;
-    }
+        .category-tab {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            background: #eee;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
 
-   .overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.3);
-      display: none;
-      z-index: 1;
-    }
-  </style>
+        .category-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .result-card {
+            position: relative;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            overflow: hidden;
+        }
+
+        .result-text {
+            position: relative;
+            z-index: 1;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .history-list {
+            columns: 2;
+            column-gap: 1rem;
+        }
+
+        .history-item {
+            break-inside: avoid;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .floating-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .floating-btn:hover {
+            transform: scale(1.1) rotate(90deg);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                width: 95%;
+                padding: 1rem;
+            }
+            
+            .history-list {
+                columns: 1;
+            }
+        }
+
+        /* 动态背景装饰 */
+        .deco-circle {
+            position: absolute;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            animation: float 8s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+    </style>
 </head>
-
 <body>
-  <div class="container">
-    <h1>随机食物选择器 🥢</h1>
-    <div id="result">点击按钮选择今天吃什么</div>
-    <button onclick="chooseDinner()">
-      选择美食
-      <span id="spinner" class="spinner" style="display: none;"></span>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">🍜 美食决策助手</h1>
+            <p class="tagline">告别选择困难，发现美味惊喜！</p>
+        </div>
+
+        <div class="category-tabs">
+            <button class="category-tab active" data-category="all">全部</button>
+            <button class="category-tab" data-category="fastfood">快餐</button>
+            <button class="category-tab" data-category="noodle">面食</button>
+            <button class="category-tab" data-category="hotpot">火锅</button>
+        </div>
+
+        <div class="card result-card">
+            <div class="result-text" id="result">点击按钮开始美食探索之旅</div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-primary" onclick="startSelection()">
+                <i class="fas fa-utensils"></i> 立即选择
+            </button>
+            <button class="btn-secondary" onclick="toggleFavorite()">
+                <i class="fas fa-heart"></i> 收藏
+            </button>
+        </div>
+
+        <div class="card">
+            <h3><i class="fas fa-history"></i> 历史记录</h3>
+            <div class="history-list" id="historyList"></div>
+        </div>
+
+        <div class="card">
+            <h3><i class="fas fa-star"></i> 我的收藏</h3>
+            <div class="history-list" id="favoriteList"></div>
+        </div>
+    </div>
+
+    <button class="floating-btn" onclick="showCustomDialog()">
+        <i class="fas fa-plus"></i>
     </button>
-  </div>
-  <div id="overlay" class="overlay"></div>
 
-  <script>
-    // 定义晚餐列表
-    const dinners = [
-      "双拼饭", "盖饭", "鸡公煲", "米村拌饭", "串串香", "炸酱面", "过桥米线", "鱼粉",
-      "黄焖鸡米饭", "旋转小火锅", "锅贴", "小笼包", "饺子", "肉饼", "麻辣烫", "重庆小面",
-      "油泼面", "麻酱鸡丝拌面", "螺蛳粉", "土豆粉", "烤鱼", "烧烤", "砂锅面", "中式烤肉",
-      "兰州拉面", "牛肉板面", "麻辣香锅", "麻辣拌", "烤鸭", "砂锅", "烤肉拌饭", "塔斯汀",
-      "KFC", "麦当劳", "必胜客", "寿司", "豚骨拉面", "韩式烤肉", "冷面", "小米食堂"
-    ];
+    <script>
+        // 增强版数据
+        const foodData = {
+            all: [
+                "双拼饭", "盖饭", "鸡公煲", "米村拌饭", "串串香", 
+                "炸酱面", "过桥米线", "鱼粉", "黄焖鸡米饭", "旋转小火锅",
+                "锅贴", "小笼包", "饺子", "肉饼", "麻辣烫", "重庆小面",
+                "油泼面", "麻酱鸡丝拌面", "螺蛳粉", "土豆粉", "烤鱼", 
+                "烧烤", "砂锅面", "中式烤肉", "兰州拉面", "牛肉板面",
+                "麻辣香锅", "麻辣拌", "烤鸭", "砂锅", "烤肉拌饭", "塔斯汀",
+                "KFC", "麦当劳", "必胜客", "寿司", "豚骨拉面", "韩式烤肉", 
+                "冷面", "小米食堂"
+            ],
+            fastfood: ["KFC", "麦当劳", "必胜客", "塔斯汀", "烤肉拌饭"],
+            noodle: ["炸酱面", "重庆小面", "油泼面", "麻酱鸡丝拌面", "兰州拉面"],
+            hotpot: ["串串香", "鸡公煲", "旋转小火锅", "麻辣香锅", "中式烤肉"]
+        };
 
-    // 随机选择晚餐的函数
-    function chooseDinner() {
-      const resultDiv = document.getElementById("result");
-      const spinner = document.getElementById("spinner");
-      const overlay = document.getElementById("overlay");
+        let history = JSON.parse(localStorage.getItem('foodHistory')) || [];
+        let favorites = JSON.parse(localStorage.getItem('foodFavorites')) || [];
 
-      // 显示加载动画和遮罩层
-      resultDiv.classList.remove("show");
-      spinner.style.display = "inline-block";
-      overlay.style.display = "block";
+        // 初始化显示
+        updateHistoryDisplay();
+        updateFavoriteDisplay();
 
-      // 模拟延迟（增加 suspense）
-      setTimeout(() => {
-        const randomDinner = dinners[Math.floor(Math.random() * dinners.length)];
-        resultDiv.innerText = `美食选择的是：${randomDinner}`;
-        resultDiv.classList.add("show");
-        spinner.style.display = "none";
-        overlay.style.display = "none";
-      }, 1000); // 1秒延迟
-    }
-  </script>
+        function startSelection() {
+            const activeCategory = document.querySelector('.category-tab.active').dataset.category;
+            const candidates = foodData[activeCategory];
+            
+            showLoadingAnimation();
+            
+            setTimeout(() => {
+                const result = getRandomFood(candidates);
+                displayResult(result);
+                addToHistory(result);
+            }, 1200);
+        }
+
+        function getRandomFood(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function displayResult(food) {
+            const resultElement = document.getElementById('result');
+            resultElement.innerHTML = `
+                <div class="result-animation">
+                    <h2>🎉 今日推荐：${food}</h2>
+                    <p>${getFoodDescription(food)}</p>
+                </div>
+            `;
+        }
+
+        function getFoodDescription(food) {
+            const descriptions = {
+                "KFC": "酥脆炸鸡搭配秘制酱料，快乐就是这么简单",
+                "麦当劳": "经典汉堡套餐，快速享受美式风味",
+                "火锅": "围炉聚炊欢呼处，百味消融小釜中"
+                // 可继续添加其他描述
+            };
+            return descriptions[food] || "发现美食新体验！";
+        }
+
+        function addToHistory(food) {
+            history.unshift({
+                food: food,
+                timestamp: new Date().toLocaleString()
+            });
+            history = history.slice(0, 10);
+            localStorage.setItem('foodHistory', JSON.stringify(history));
+            updateHistoryDisplay();
+        }
+
+        function toggleFavorite() {
+            const currentFood = document.querySelector('#result h2')?.textContent.split('：')[1];
+            if (!currentFood) return;
+
+            const index = favorites.indexOf(currentFood);
+            if (index > -1) {
+                favorites.splice(index, 1);
+            } else {
+                favorites.push(currentFood);
+            }
+            localStorage.setItem('foodFavorites', JSON.stringify(favorites));
+            updateFavoriteDisplay();
+        }
+
+        function updateHistoryDisplay() {
+            const listElement = document.getElementById('historyList');
+            listElement.innerHTML = history.map(item => `
+                <div class="history-item">
+                    <span>🍴 ${item.food}</span>
+                    <small>${item.timestamp}</small>
+                </div>
+            `).join('');
+        }
+
+        function updateFavoriteDisplay() {
+            const listElement = document.getElementById('favoriteList');
+            listElement.innerHTML = favorites.map(food => `
+                <div class="history-item">
+                    <span>❤️ ${food}</span>
+                </div>
+            `).join('');
+        }
+
+        function showCustomDialog() {
+            const newFood = prompt('请输入您想添加的新美食：');
+            if (newFood) {
+                foodData.all.push(newFood);
+                alert('添加成功！下次选择时即可看到该选项');
+            }
+        }
+
+        function showLoadingAnimation() {
+            const resultElement = document.getElementById('result');
+            resultElement.innerHTML = `
+                <div class="loading-animation">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>正在探索美食宇宙...</p>
+                </div>
+            `;
+        }
+
+        // 分类切换功能
+        document.querySelectorAll('.category-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
 </body>
-
 </html>
