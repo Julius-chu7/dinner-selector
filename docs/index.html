@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>随机晚餐选择器</title>
+  <title>随机美食选择器</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -100,10 +100,10 @@
 
 <body>
   <div class="container">
-    <h1>随机晚餐选择器 🥢</h1>
-    <div id="result">点击按钮选择晚餐</div>
+    <h1>随机食物选择器 🥢</h1>
+    <div id="result">点击按钮选择今天吃什么</div>
     <button onclick="chooseDinner()">
-      选择晚餐
+      选择美食
       <span id="spinner" class="spinner" style="display: none;"></span>
     </button>
   </div>
@@ -116,7 +116,7 @@
       "黄焖鸡米饭", "旋转小火锅", "锅贴", "小笼包", "饺子", "肉饼", "麻辣烫", "重庆小面",
       "油泼面", "麻酱鸡丝拌面", "螺蛳粉", "土豆粉", "烤鱼", "烧烤", "砂锅面", "中式烤肉",
       "兰州拉面", "牛肉板面", "麻辣香锅", "麻辣拌", "烤鸭", "砂锅", "烤肉拌饭", "塔斯汀",
-      "KFC", "麦当劳", "必胜客", "寿司", "豚骨拉面", "韩式烤肉", "冷面", "食堂"
+      "KFC", "麦当劳", "必胜客", "寿司", "豚骨拉面", "韩式烤肉", "冷面", "小米食堂"
     ];
 
     // 随机选择晚餐的函数
@@ -133,7 +133,7 @@
       // 模拟延迟（增加 suspense）
       setTimeout(() => {
         const randomDinner = dinners[Math.floor(Math.random() * dinners.length)];
-        resultDiv.innerText = `今晚的晚餐是：${randomDinner}`;
+        resultDiv.innerText = `美食选择的是：${randomDinner}`;
         resultDiv.classList.add("show");
         spinner.style.display = "none";
         overlay.style.display = "none";
