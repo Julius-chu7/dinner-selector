@@ -32,6 +32,39 @@
             width: 90%;
             max-width: 800px;
             backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        /* 新增工具箱样式 */
+        .toolbox {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            width: 160px;
+            z-index: 1000;
+        }
+
+        .toolbox h3 {
+            margin: 0 0 1rem;
+            font-size: 1.2em;
+            color: var(--secondary);
+            text-align: center;
+        }
+
+        .dice-container {
+            text-align: center;
+        }
+
+        #diceResult {
+            font-size: 2em;
+            margin: 0.5rem 0;
+            min-height: 40px;
+            transition: all 0.3s ease;
         }
 
         .header {
@@ -67,7 +100,7 @@
 
         .controls {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 1rem;
             margin: 2rem 0;
         }
@@ -124,6 +157,21 @@
             margin-bottom: 0.5rem;
             background: #f8f9fa;
             border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .delete-btn {
+            color: #ff6b6b;
+            cursor: pointer;
+            padding: 2px 5px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            background: #ffecec;
         }
 
         .floating-btn {
@@ -154,29 +202,28 @@
             .history-list {
                 columns: 1;
             }
-        }
 
-        /* 动态背景装饰 */
-        .deco-circle {
-            position: absolute;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            animation: float 8s infinite;
-        }
-
-        @keyframes float {
-            0%, 100% {
-                transform: translateY(0);
-            }
-
-            50% {
-                transform: translateY(-20px);
+            .toolbox {
+                right: 10px;
+                width: 120px;
+                padding: 0.8rem;
             }
         }
     </style>
 </head>
 
 <body>
+    <!-- 工具箱 -->
+    <div class="toolbox">
+        <h3>🔧 小工具</h3>
+        <div class="dice-container">
+            <button class="btn-secondary" onclick="rollDice()">
+                <i class="fas fa-dice"></i> 掷骰子
+            </button>
+            <div id="diceResult"></div>
+        </div>
+    </div>
+
     <div class="container">
         <div class="header">
             <h1 class="title">🍜 美食决策助手</h1>
@@ -205,8 +252,11 @@
             <button class="btn-secondary" onclick="toggleFavorite()">
                 <i class="fas fa-heart"></i> 收藏
             </button>
+            <button class="btn-secondary" onclick="shareResult()">
+                <i class="fas fa-share"></i> 分享
+            </button>
             <button class="btn-secondary" onclick="clearHistory()">
-                <i class="fas fa-trash"></i> 清空历史记录
+                <i class="fas fa-trash"></i> 清空历史
             </button>
         </div>
 
@@ -226,33 +276,7 @@
     </button>
 
     <script>
-        // 丰富版数据
-        const foodData = {
-            all: [
-                // 快餐
-                "KFC", "麦当劳", "必胜客", "塔斯汀", "汉堡王", "德克士", "永和大王", "真功夫",
-                // 面食
-                "炸酱面", "重庆小面", "油泼面", "麻酱鸡丝拌面", "兰州拉面", "牛肉板面", "豚骨拉面", "日式乌冬面", "意大利面",
-                // 火锅
-                "串串香", "鸡公煲", "旋转小火锅", "麻辣香锅", "中式烤肉", "韩式部队火锅", "泰式冬阴功火锅",
-                // 米饭类
-                "双拼饭", "盖饭", "米村拌饭", "黄焖鸡米饭", "卤肉饭", "煲仔饭", "石锅拌饭", "咖喱饭",
-                // 饺子包子类
-                "锅贴", "小笼包", "饺子", "生煎包", "灌汤包", "烧麦",
-                // 海鲜类
-                "烤鱼", "寿司", "海鲜粥", "花甲粉", "清蒸鱼", "虾饺",
-                // 烧烤类
-                "烧烤", "中式烤肉", "韩式烤肉", "铁板烧"
-            ],
-            fastfood: ["KFC", "麦当劳", "必胜客", "塔斯汀", "汉堡王", "德克士", "永和大王", "真功夫"],
-            noodle: ["炸酱面", "重庆小面", "油泼面", "麻酱鸡丝拌面", "兰州拉面", "牛肉板面", "豚骨拉面", "日式乌冬面", "意大利面"],
-            hotpot: ["串串香", "鸡公煲", "旋转小火锅", "麻辣香锅", "中式烤肉", "韩式部队火锅", "泰式冬阴功火锅"],
-            rice: ["双拼饭", "盖饭", "米村拌饭", "黄焖鸡米饭", "卤肉饭", "煲仔饭", "石锅拌饭", "咖喱饭"],
-            dumpling: ["锅贴", "小笼包", "饺子", "生煎包", "灌汤包", "烧麦"],
-            seafood: ["烤鱼", "寿司", "海鲜粥", "花甲粉", "清蒸鱼", "虾饺"],
-            barbecue: ["烧烤", "中式烤肉", "韩式烤肉", "铁板烧"]
-        };
-
+        // 数据存储
         let history = JSON.parse(localStorage.getItem('foodHistory')) || [];
         let favorites = JSON.parse(localStorage.getItem('foodFavorites')) || [];
 
@@ -260,6 +284,7 @@
         updateHistoryDisplay();
         updateFavoriteDisplay();
 
+        // 核心功能
         function startSelection() {
             const activeCategory = document.querySelector('.category-tab.active').dataset.category;
             const candidates = foodData[activeCategory];
@@ -277,6 +302,7 @@
             return arr[Math.floor(Math.random() * arr.length)];
         }
 
+        // 显示相关
         function displayResult(food) {
             const resultElement = document.getElementById('result');
             resultElement.innerHTML = `
@@ -294,11 +320,11 @@
                 "火锅": "围炉聚炊欢呼处，百味消融小釜中",
                 "寿司": "新鲜的食材与软糯米饭的完美结合，带来舌尖上的海洋之旅",
                 "烧烤": "烟火气息，烤出生活的滋味"
-                // 可继续添加其他描述
             };
             return descriptions[food] || "发现美食新体验！";
         }
 
+        // 历史记录
         function addToHistory(food) {
             history.unshift({
                 food: food,
@@ -309,6 +335,17 @@
             updateHistoryDisplay();
         }
 
+        function updateHistoryDisplay() {
+            const listElement = document.getElementById('historyList');
+            listElement.innerHTML = history.map(item => `
+                <div class="history-item">
+                    <span>🍴 ${item.food}</span>
+                    <small>${item.timestamp}</small>
+                </div>
+            `).join('');
+        }
+
+        // 收藏功能
         function toggleFavorite() {
             const currentFood = document.querySelector('#result h2')?.textContent.split('：')[1];
             if (!currentFood) return;
@@ -323,39 +360,82 @@
             updateFavoriteDisplay();
         }
 
-        function updateHistoryDisplay() {
-            const listElement = document.getElementById('historyList');
-            listElement.innerHTML = history.map(item => `
-                <div class="history-item">
-                    <span>🍴 ${item.food}</span>
-                    <small>${item.timestamp}</small>
-                </div>
-            `).join('');
-        }
-
         function updateFavoriteDisplay() {
             const listElement = document.getElementById('favoriteList');
             listElement.innerHTML = favorites.map(food => `
                 <div class="history-item">
                     <span>❤️ ${food}</span>
+                    <span class="delete-btn" onclick="removeFromFavorite('${food}')">
+                        <i class="fas fa-times"></i>
+                    </span>
                 </div>
             `).join('');
         }
 
+        function removeFromFavorite(food) {
+            favorites = favorites.filter(item => item !== food);
+            localStorage.setItem('foodFavorites', JSON.stringify(favorites));
+            updateFavoriteDisplay();
+        }
+
+        // 新增功能：分享
+        function shareResult() {
+            const result = document.querySelector('#result h2')?.textContent;
+            const shareData = {
+                title: '美食推荐',
+                text: result || '发现美食选择神器！',
+                url: window.location.href
+            };
+
+            if (navigator.share) {
+                navigator.share(shareData).catch(console.error);
+            } else {
+                const text = `${shareData.text} - ${shareData.url}`;
+                navigator.clipboard.writeText(text)
+                    .then(() => alert('链接已复制到剪贴板'))
+                    .catch(() => prompt('请手动复制链接：', text));
+            }
+        }
+
+        // 新增功能：掷骰子
+        function rollDice() {
+            const resultElement = document.getElementById('diceResult');
+            let count = 0;
+            
+            const animation = setInterval(() => {
+                resultElement.textContent = Math.floor(Math.random() * 6) + 1;
+                count++;
+                if(count > 10) {
+                    clearInterval(animation);
+                    const final = Math.floor(Math.random() * 6) + 1;
+                    resultElement.textContent = final;
+                    resultElement.style.transform = 'scale(1.2)';
+                    setTimeout(() => {
+                        resultElement.style.transform = 'scale(1)';
+                    }, 200);
+                }
+            }, 100);
+        }
+
+        // 其他功能
         function showCustomDialog() {
             const newFood = prompt('请输入您想添加的新美食：');
             if (newFood) {
-                const category = prompt('请选择该美食的分类（fastfood/noodle/hotpot/rice/dumpling/seafood/barbecue/all）：');
+                const category = prompt('请选择分类（fastfood/noodle/hotpot/rice/dumpling/seafood/barbecue/all）：');
                 if (category && foodData[category]) {
                     foodData[category].push(newFood);
-                    if (category!== 'all') {
+                    if (category !== 'all') {
                         foodData.all.push(newFood);
                     }
-                    alert('添加成功！下次选择时即可看到该选项');
-                } else {
-                    alert('分类输入有误，请重新添加。');
+                    alert('添加成功！');
                 }
             }
+        }
+
+        function clearHistory() {
+            history = [];
+            localStorage.setItem('foodHistory', JSON.stringify(history));
+            updateHistoryDisplay();
         }
 
         function showLoadingAnimation() {
@@ -368,20 +448,32 @@
             `;
         }
 
-        // 分类切换功能
+        // 事件监听
         document.querySelectorAll('.category-tab').forEach(tab => {
-            tab.addEventListener('click', function () {
+            tab.addEventListener('click', function() {
                 document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
                 this.classList.add('active');
             });
         });
 
-        function clearHistory() {
-            history = [];
-            localStorage.setItem('foodHistory', JSON.stringify(history));
-            updateHistoryDisplay();
-        }
+        document.getElementById('favoriteList').addEventListener('click', function(e) {
+            if(e.target.closest('.delete-btn')) {
+                const food = e.target.closest('.history-item').querySelector('span').textContent.replace('❤️ ', '');
+                removeFromFavorite(food);
+            }
+        });
+
+        // 数据源
+        const foodData = {
+            all: ["KFC","麦当劳","必胜客","塔斯汀","汉堡王","德克士","永和大王","真功夫","炸酱面","重庆小面","油泼面","麻酱鸡丝拌面","兰州拉面","牛肉板面","豚骨拉面","日式乌冬面","意大利面","串串香","鸡公煲","旋转小火锅","麻辣香锅","中式烤肉","韩式部队火锅","泰式冬阴功火锅","双拼饭","盖饭","米村拌饭","黄焖鸡米饭","卤肉饭","煲仔饭","石锅拌饭","咖喱饭","锅贴","小笼包","饺子","生煎包","灌汤包","烧麦","烤鱼","寿司","海鲜粥","花甲粉","清蒸鱼","虾饺","烧烤","中式烤肉","韩式烤肉","铁板烧"],
+            fastfood: ["KFC","麦当劳","必胜客","塔斯汀","汉堡王","德克士","永和大王","真功夫"],
+            noodle: ["炸酱面","重庆小面","油泼面","麻酱鸡丝拌面","兰州拉面","牛肉板面","豚骨拉面","日式乌冬面","意大利面"],
+            hotpot: ["串串香","鸡公煲","旋转小火锅","麻辣香锅","中式烤肉","韩式部队火锅","泰式冬阴功火锅"],
+            rice: ["双拼饭","盖饭","米村拌饭","黄焖鸡米饭","卤肉饭","煲仔饭","石锅拌饭","咖喱饭"],
+            dumpling: ["锅贴","小笼包","饺子","生煎包","灌汤包","烧麦"],
+            seafood: ["烤鱼","寿司","海鲜粥","花甲粉","清蒸鱼","虾饺"],
+            barbecue: ["烧烤","中式烤肉","韩式烤肉","铁板烧"]
+        };
     </script>
 </body>
-
 </html>
