@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>随机晚餐选择器</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #f0f0f0;
+      text-align: center;
+    }
+
+   .container {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      color: #4CAF50;
+      font-size: 2.5em;
+      margin-bottom: 20px;
+    }
+
+    #result {
+      font-size: 24px;
+      margin: 20px 0;
+      padding: 15px;
+      background: #fff3cd;
+      border-radius: 5px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease, background-color 0.5s ease;
+    }
+
+    #result.show {
+      opacity: 1;
+      transform: translateY(0);
+      background-color: #d4edda;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    button:hover {
+      background: #45a049;
+      transform: scale(1.05);
+    }
+
+    button:active {
+      transform: scale(0.9);
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+   .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(0, 0, 0, 0.1);
+      border-top: 3px solid #4CAF50;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-left: 10px;
+    }
+
+   .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.3);
+      display: none;
+      z-index: 1;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>随机晚餐选择器 🥢</h1>
+    <div id="result">点击按钮选择晚餐</div>
+    <button onclick="chooseDinner()">
+      选择晚餐
+      <span id="spinner" class="spinner" style="display: none;"></span>
+    </button>
+  </div>
+  <div id="overlay" class="overlay"></div>
+
+  <script>
+    // 定义晚餐列表
+    const dinners = [
+      "双拼饭", "盖饭", "鸡公煲", "米村拌饭", "串串香", "炸酱面", "过桥米线", "鱼粉",
+      "黄焖鸡米饭", "旋转小火锅", "锅贴", "小笼包", "饺子", "肉饼", "麻辣烫", "重庆小面",
+      "油泼面", "麻酱鸡丝拌面", "螺蛳粉", "土豆粉", "烤鱼", "烧烤", "砂锅面", "中式烤肉",
+      "兰州拉面", "牛肉板面", "麻辣香锅", "麻辣拌", "烤鸭", "砂锅", "烤肉拌饭", "塔斯汀",
+      "KFC", "麦当劳", "必胜客", "寿司", "豚骨拉面", "韩式烤肉", "冷面"
+    ];
+
+    // 随机选择晚餐的函数
+    function chooseDinner() {
+      const resultDiv = document.getElementById("result");
+      const spinner = document.getElementById("spinner");
+      const overlay = document.getElementById("overlay");
+
+      // 显示加载动画和遮罩层
+      resultDiv.classList.remove("show");
+      spinner.style.display = "inline-block";
+      overlay.style.display = "block";
+
+      // 模拟延迟（增加 suspense）
+      setTimeout(() => {
+        const randomDinner = dinners[Math.floor(Math.random() * dinners.length)];
+        resultDiv.innerText = `今晚的晚餐是：${randomDinner}`;
+        resultDiv.classList.add("show");
+        spinner.style.display = "none";
+        overlay.style.display = "none";
+      }, 1000); // 1秒延迟
+    }
+  </script>
+</body>
+
+</html>
