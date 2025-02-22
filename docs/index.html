@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>智能美食决策助手</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -33,38 +33,7 @@
             max-width: 800px;
             backdrop-filter: blur(10px);
             position: relative;
-        }
-
-        /* 新增工具箱样式 */
-        .toolbox {
-            position: fixed;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255, 255, 255, 0.95);
-            padding: 1rem;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            width: 160px;
-            z-index: 1000;
-        }
-
-        .toolbox h3 {
-            margin: 0 0 1rem;
-            font-size: 1.2em;
-            color: var(--secondary);
-            text-align: center;
-        }
-
-        .dice-container {
-            text-align: center;
-        }
-
-        #diceResult {
-            font-size: 2em;
-            margin: 0.5rem 0;
-            min-height: 40px;
-            transition: all 0.3s ease;
+            margin: 20px;
         }
 
         .header {
@@ -193,31 +162,103 @@
             transform: scale(1.1) rotate(90deg);
         }
 
+        /* 新增工具栏样式 */
+        .toolbox {
+            position: fixed;
+            right: -140px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            width: 160px;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .toolbox:hover,
+        .toolbox.active {
+            right: 20px;
+        }
+
+        .toolbox h3 {
+            margin: 0 0 1rem;
+            font-size: 1.2em;
+            color: var(--secondary);
+            text-align: center;
+        }
+
+        .toolbox-toggle {
+            display: none;
+            position: fixed;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 10px 5px;
+            border-radius: 8px 0 0 8px;
+            cursor: pointer;
+            z-index: 999;
+        }
+
+        /* 移动端优化 */
         @media (max-width: 768px) {
             .container {
-                width: 95%;
+                width: 100%;
                 padding: 1rem;
+                margin: 10px;
+                border-radius: 10px;
             }
 
-            .history-list {
-                columns: 1;
+            .title {
+                font-size: 1.8em;
+            }
+
+            .category-tabs {
+                gap: 4px;
+            }
+
+            .category-tab {
+                padding: 4px 8px;
+                font-size: 0.9em;
+            }
+
+            .controls {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+
+            .result-card {
+                min-height: 120px;
+                font-size: 1.2rem;
             }
 
             .toolbox {
-                right: 10px;
-                width: 120px;
-                padding: 0.8rem;
+                width: 130px;
+                right: -110px;
+                padding: 10px;
+            }
+
+            .toolbox-toggle {
+                display: block;
             }
         }
     </style>
 </head>
 
 <body>
-    <!-- 工具箱 -->
-    <div class="toolbox">
+    <!-- 新增工具栏触发按钮 -->
+    <div class="toolbox-toggle" onclick="toggleToolbox()">
+        <i class="fas fa-chevron-left"></i>
+    </div>
+
+    <!-- 工具栏 -->
+    <div class="toolbox" id="toolbox" role="toolbar">
         <h3>🔧 小工具</h3>
         <div class="dice-container">
-            <button class="btn-secondary" onclick="rollDice()">
+            <button class="btn-secondary" onclick="rollDice()" aria-label="掷骰子">
                 <i class="fas fa-dice"></i> 掷骰子
             </button>
             <div id="diceResult"></div>
@@ -246,16 +287,16 @@
         </div>
 
         <div class="controls">
-            <button class="btn-primary" onclick="startSelection()">
+            <button class="btn-primary" onclick="startSelection()" aria-label="立即选择美食">
                 <i class="fas fa-utensils"></i> 立即选择
             </button>
-            <button class="btn-secondary" onclick="toggleFavorite()">
+            <button class="btn-secondary" onclick="toggleFavorite()" aria-label="收藏当前美食">
                 <i class="fas fa-heart"></i> 收藏
             </button>
-            <button class="btn-secondary" onclick="shareResult()">
+            <button class="btn-secondary" onclick="shareResult()" aria-label="分享当前美食">
                 <i class="fas fa-share"></i> 分享
             </button>
-            <button class="btn-secondary" onclick="clearHistory()">
+            <button class="btn-secondary" onclick="clearHistory()" aria-label="清空历史记录">
                 <i class="fas fa-trash"></i> 清空历史
             </button>
         </div>
@@ -271,7 +312,7 @@
         </div>
     </div>
 
-    <button class="floating-btn" onclick="showCustomDialog()">
+    <button class="floating-btn" onclick="showCustomDialog()" aria-label="添加新美食">
         <i class="fas fa-plus"></i>
     </button>
 
@@ -326,11 +367,13 @@
 
         // 历史记录
         function addToHistory(food) {
+            if (history.length >= 20) {
+                history.pop(); // 移除最旧的一条记录
+            }
             history.unshift({
                 food: food,
                 timestamp: new Date().toLocaleString()
             });
-            history = history.slice(0, 10);
             localStorage.setItem('foodHistory', JSON.stringify(history));
             updateHistoryDisplay();
         }
@@ -365,7 +408,7 @@
             listElement.innerHTML = favorites.map(food => `
                 <div class="history-item">
                     <span>❤️ ${food}</span>
-                    <span class="delete-btn" onclick="removeFromFavorite('${food}')">
+                    <span class="delete-btn" onclick="removeFromFavorite('${food}')" aria-label="删除收藏">
                         <i class="fas fa-times"></i>
                     </span>
                 </div>
@@ -381,6 +424,10 @@
         // 新增功能：分享
         function shareResult() {
             const result = document.querySelector('#result h2')?.textContent;
+            if (!result) {
+                alert('请先选择美食！');
+                return;
+            }
             const shareData = {
                 title: '美食推荐',
                 text: result || '发现美食选择神器！',
@@ -405,31 +452,89 @@
             const animation = setInterval(() => {
                 resultElement.textContent = Math.floor(Math.random() * 6) + 1;
                 count++;
-                if(count > 10) {
+                if (count > 10) {
                     clearInterval(animation);
                     const final = Math.floor(Math.random() * 6) + 1;
                     resultElement.textContent = final;
                     resultElement.style.transform = 'scale(1.2)';
                     setTimeout(() => {
                         resultElement.style.transform = 'scale(1)';
+                        alert(`骰子结果：${final}`);
                     }, 200);
                 }
             }, 100);
         }
 
+        // 工具栏交互逻辑
+        function toggleToolbox() {
+            const toolbox = document.getElementById('toolbox');
+            toolbox.classList.toggle('active');
+            
+            // 自动隐藏逻辑
+            if (toolbox.classList.contains('active')) {
+                setTimeout(() => {
+                    if (toolbox.classList.contains('active')) {
+                        toolbox.classList.remove('active');
+                    }
+                }, 3000);
+            }
+        }
+
+        // 点击外部区域关闭工具栏
+        document.addEventListener('click', (e) => {
+            const toolbox = document.getElementById('toolbox');
+            const toggleBtn = document.querySelector('.toolbox-toggle');
+            
+            if (!toolbox.contains(e.target) && !toggleBtn.contains(e.target)) {
+                toolbox.classList.remove('active');
+            }
+        });
+
+        // 移动端触摸处理
+        let touchStartX = 0;
+        document.addEventListener('touchstart', e => {
+            touchStartX = e.touches[0].clientX;
+        });
+
+        document.addEventListener('touchend', e => {
+            const touchEndX = e.changedTouches[0].clientX;
+            const toolbox = document.getElementById('toolbox');
+            
+            // 右滑展开工具栏
+            if (touchStartX - touchEndX > 50 && window.innerWidth <= 768) {
+                toolbox.classList.add('active');
+                setTimeout(() => toolbox.classList.remove('active'), 3000);
+            }
+        });
+
         // 其他功能
         function showCustomDialog() {
             const newFood = prompt('请输入您想添加的新美食：');
-            if (newFood) {
-                const category = prompt('请选择分类（fastfood/noodle/hotpot/rice/dumpling/seafood/barbecue/all）：');
-                if (category && foodData[category]) {
-                    foodData[category].push(newFood);
-                    if (category !== 'all') {
-                        foodData.all.push(newFood);
-                    }
-                    alert('添加成功！');
-                }
+            if (!newFood?.trim()) {
+                alert('美食名称不能为空！');
+                return;
             }
+            const category = prompt('请选择分类（fastfood/noodle/hotpot/rice/dumpling/seafood/barbecue/all）：');
+            if (!category || !foodData[category]) {
+                alert('分类输入有误，请重新添加。');
+                return;
+            }
+            if (addCustomFood(newFood, category)) {
+                alert('添加成功！');
+            } else {
+                alert('该美食已存在！');
+            }
+        }
+
+        function addCustomFood(newFood, category) {
+            if (!foodData[category].includes(newFood)) {
+                foodData[category].push(newFood);
+                if (category !== 'all') {
+                    foodData.all.push(newFood);
+                }
+                return true;
+            }
+            return false;
         }
 
         function clearHistory() {
@@ -457,7 +562,7 @@
         });
 
         document.getElementById('favoriteList').addEventListener('click', function(e) {
-            if(e.target.closest('.delete-btn')) {
+            if (e.target.closest('.delete-btn')) {
                 const food = e.target.closest('.history-item').querySelector('span').textContent.replace('❤️ ', '');
                 removeFromFavorite(food);
             }
