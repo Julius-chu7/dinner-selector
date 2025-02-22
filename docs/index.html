@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,7 +28,7 @@
             background: rgba(255, 255, 255, 0.95);
             padding: 2rem;
             border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             width: 90%;
             max-width: 800px;
             backdrop-filter: blur(10px);
@@ -43,7 +44,7 @@
             font-size: 2.5em;
             color: var(--primary);
             margin: 0;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .tagline {
@@ -55,7 +56,7 @@
             background: white;
             padding: 1.5rem;
             border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             margin: 1rem 0;
             transition: transform 0.3s ease;
         }
@@ -135,7 +136,7 @@
             background: var(--primary);
             color: white;
             border: none;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             cursor: pointer;
             transition: all 0.3s ease;
         }
@@ -149,7 +150,7 @@
                 width: 95%;
                 padding: 1rem;
             }
-            
+
             .history-list {
                 columns: 1;
             }
@@ -158,17 +159,23 @@
         /* 动态背景装饰 */
         .deco-circle {
             position: absolute;
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 50%;
             animation: float 8s infinite;
         }
 
         @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
+            0%, 100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
@@ -181,6 +188,10 @@
             <button class="category-tab" data-category="fastfood">快餐</button>
             <button class="category-tab" data-category="noodle">面食</button>
             <button class="category-tab" data-category="hotpot">火锅</button>
+            <button class="category-tab" data-category="rice">米饭类</button>
+            <button class="category-tab" data-category="dumpling">饺子包子类</button>
+            <button class="category-tab" data-category="seafood">海鲜类</button>
+            <button class="category-tab" data-category="barbecue">烧烤类</button>
         </div>
 
         <div class="card result-card">
@@ -193,6 +204,9 @@
             </button>
             <button class="btn-secondary" onclick="toggleFavorite()">
                 <i class="fas fa-heart"></i> 收藏
+            </button>
+            <button class="btn-secondary" onclick="clearHistory()">
+                <i class="fas fa-trash"></i> 清空历史记录
             </button>
         </div>
 
@@ -212,21 +226,31 @@
     </button>
 
     <script>
-        // 增强版数据
+        // 丰富版数据
         const foodData = {
             all: [
-                "双拼饭", "盖饭", "鸡公煲", "米村拌饭", "串串香", 
-                "炸酱面", "过桥米线", "鱼粉", "黄焖鸡米饭", "旋转小火锅",
-                "锅贴", "小笼包", "饺子", "肉饼", "麻辣烫", "重庆小面",
-                "油泼面", "麻酱鸡丝拌面", "螺蛳粉", "土豆粉", "烤鱼", 
-                "烧烤", "砂锅面", "中式烤肉", "兰州拉面", "牛肉板面",
-                "麻辣香锅", "麻辣拌", "烤鸭", "砂锅", "烤肉拌饭", "塔斯汀",
-                "KFC", "麦当劳", "必胜客", "寿司", "豚骨拉面", "韩式烤肉", 
-                "冷面", "小米食堂"
+                // 快餐
+                "KFC", "麦当劳", "必胜客", "塔斯汀", "汉堡王", "德克士", "永和大王", "真功夫",
+                // 面食
+                "炸酱面", "重庆小面", "油泼面", "麻酱鸡丝拌面", "兰州拉面", "牛肉板面", "豚骨拉面", "日式乌冬面", "意大利面",
+                // 火锅
+                "串串香", "鸡公煲", "旋转小火锅", "麻辣香锅", "中式烤肉", "韩式部队火锅", "泰式冬阴功火锅",
+                // 米饭类
+                "双拼饭", "盖饭", "米村拌饭", "黄焖鸡米饭", "卤肉饭", "煲仔饭", "石锅拌饭", "咖喱饭",
+                // 饺子包子类
+                "锅贴", "小笼包", "饺子", "生煎包", "灌汤包", "烧麦",
+                // 海鲜类
+                "烤鱼", "寿司", "海鲜粥", "花甲粉", "清蒸鱼", "虾饺",
+                // 烧烤类
+                "烧烤", "中式烤肉", "韩式烤肉", "铁板烧"
             ],
-            fastfood: ["KFC", "麦当劳", "必胜客", "塔斯汀", "烤肉拌饭"],
-            noodle: ["炸酱面", "重庆小面", "油泼面", "麻酱鸡丝拌面", "兰州拉面"],
-            hotpot: ["串串香", "鸡公煲", "旋转小火锅", "麻辣香锅", "中式烤肉"]
+            fastfood: ["KFC", "麦当劳", "必胜客", "塔斯汀", "汉堡王", "德克士", "永和大王", "真功夫"],
+            noodle: ["炸酱面", "重庆小面", "油泼面", "麻酱鸡丝拌面", "兰州拉面", "牛肉板面", "豚骨拉面", "日式乌冬面", "意大利面"],
+            hotpot: ["串串香", "鸡公煲", "旋转小火锅", "麻辣香锅", "中式烤肉", "韩式部队火锅", "泰式冬阴功火锅"],
+            rice: ["双拼饭", "盖饭", "米村拌饭", "黄焖鸡米饭", "卤肉饭", "煲仔饭", "石锅拌饭", "咖喱饭"],
+            dumpling: ["锅贴", "小笼包", "饺子", "生煎包", "灌汤包", "烧麦"],
+            seafood: ["烤鱼", "寿司", "海鲜粥", "花甲粉", "清蒸鱼", "虾饺"],
+            barbecue: ["烧烤", "中式烤肉", "韩式烤肉", "铁板烧"]
         };
 
         let history = JSON.parse(localStorage.getItem('foodHistory')) || [];
@@ -239,9 +263,9 @@
         function startSelection() {
             const activeCategory = document.querySelector('.category-tab.active').dataset.category;
             const candidates = foodData[activeCategory];
-            
+
             showLoadingAnimation();
-            
+
             setTimeout(() => {
                 const result = getRandomFood(candidates);
                 displayResult(result);
@@ -267,7 +291,9 @@
             const descriptions = {
                 "KFC": "酥脆炸鸡搭配秘制酱料，快乐就是这么简单",
                 "麦当劳": "经典汉堡套餐，快速享受美式风味",
-                "火锅": "围炉聚炊欢呼处，百味消融小釜中"
+                "火锅": "围炉聚炊欢呼处，百味消融小釜中",
+                "寿司": "新鲜的食材与软糯米饭的完美结合，带来舌尖上的海洋之旅",
+                "烧烤": "烟火气息，烤出生活的滋味"
                 // 可继续添加其他描述
             };
             return descriptions[food] || "发现美食新体验！";
@@ -319,8 +345,16 @@
         function showCustomDialog() {
             const newFood = prompt('请输入您想添加的新美食：');
             if (newFood) {
-                foodData.all.push(newFood);
-                alert('添加成功！下次选择时即可看到该选项');
+                const category = prompt('请选择该美食的分类（fastfood/noodle/hotpot/rice/dumpling/seafood/barbecue/all）：');
+                if (category && foodData[category]) {
+                    foodData[category].push(newFood);
+                    if (category!== 'all') {
+                        foodData.all.push(newFood);
+                    }
+                    alert('添加成功！下次选择时即可看到该选项');
+                } else {
+                    alert('分类输入有误，请重新添加。');
+                }
             }
         }
 
@@ -336,11 +370,18 @@
 
         // 分类切换功能
         document.querySelectorAll('.category-tab').forEach(tab => {
-            tab.addEventListener('click', function() {
+            tab.addEventListener('click', function () {
                 document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
                 this.classList.add('active');
             });
         });
+
+        function clearHistory() {
+            history = [];
+            localStorage.setItem('foodHistory', JSON.stringify(history));
+            updateHistoryDisplay();
+        }
     </script>
 </body>
+
 </html>
