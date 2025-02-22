@@ -264,6 +264,58 @@
             max-width: 400px;
         }
 
+        .custom-dialog::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: -1;
+        }
+
+        .dialog-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text);
+            cursor: pointer;
+            padding: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            color: var(--primary);
+        }
+
+        .dialog-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .dialog-buttons button {
+            flex: 1;
+            padding: 0.5rem;
+            border-radius: 8px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dialog-buttons button:hover {
+            opacity: 0.9;
+        }
+
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
@@ -399,6 +451,7 @@
         // 数据存储
         let history = JSON.parse(localStorage.getItem('foodHistory')) || [];
         let favorites = JSON.parse(localStorage.getItem('foodFavorites')) || [];
+        let isDialogOpen = false;
 
         // 初始化显示
         updateHistoryDisplay();
@@ -422,6 +475,71 @@
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
         updateThemeIcon(savedTheme);
+
+        // 自定义美食弹窗
+        function showCustomDialog() {
+            if (isDialogOpen) return;
+
+            isDialogOpen = true;
+
+            const dialog = document.createElement('div');
+            dialog.className = 'custom-dialog';
+            dialog.innerHTML = `
+                <div class="dialog-header">
+                    <h3>添加新美食</h3>
+                    <button class="close-btn" onclick="closeDialog()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <input type="text" id="foodName" placeholder="美食名称">
+                <select id="foodCategory">
+                    ${Object.keys(foodData).map(k => `<option value="${k}">${k}</option>`).join('')}
+                </select>
+                <div class="dialog-buttons">
+                    <button onclick="submitFood()">提交</button>
+                    <button onclick="closeDialog()">取消</button>
+                </div>
+            `;
+
+            dialog.addEventListener('click', (e) => {
+                if (e.target === dialog) {
+                    closeDialog();
+                }
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeDialog();
+                }
+            });
+
+            document.body.appendChild(dialog);
+        }
+
+        function closeDialog() {
+            const dialog = document.querySelector('.custom-dialog');
+            if (dialog) {
+                dialog.remove();
+                isDialogOpen = false;
+            }
+        }
+
+        function submitFood() {
+            const foodName = document.getElementById('foodName').value.trim();
+            const category = document.getElementById('foodCategory').value;
+
+            if (!foodName) {
+                alert('美食名称不能为空！');
+                return;
+            }
+
+            if (addCustomFood(foodName, category)) {
+                alert('添加成功！');
+                closeDialog();
+            } else {
+                alert('该美食已存在！');
+            }
+        }
 
         // 核心功能
         function startSelection() {
@@ -466,7 +584,7 @@
         // 历史记录
         function addToHistory(food) {
             if (history.length >= 20) {
-                history.pop(); // 移除最旧的一条记录
+                history.pop();
             }
             history.unshift({
                 food: food,
@@ -505,7 +623,7 @@
             const listElement = document.getElementById('favoriteList');
             listElement.innerHTML = favorites.map(food => `
                 <div class="history-item">
-                    <span❤️ ${food}</span>
+                    <span>❤️ ${food}</span>
                     <span class="delete-btn" onclick="removeFromFavorite('${food}')" aria-label="删除收藏">
                         <i class="fas fa-times"></i>
                     </span>
@@ -573,7 +691,6 @@
             const toolbox = document.getElementById('toolbox');
             toolbox.classList.toggle('active');
             
-            // 自动隐藏逻辑
             if (toolbox.classList.contains('active')) {
                 setTimeout(() => {
                     if (toolbox.classList.contains('active')) {
@@ -603,51 +720,11 @@
             const touchEndX = e.changedTouches[0].clientX;
             const toolbox = document.getElementById('toolbox');
             
-            // 右滑展开工具栏
             if (touchEndX - touchStartX > 50 && window.innerWidth <= 768) {
                 toolbox.classList.add('active');
                 setTimeout(() => toolbox.classList.remove('active'), 3000);
             }
         });
-
-        // 自定义美食弹窗
-        function showCustomDialog() {
-            const dialog = document.createElement('div');
-            dialog.className = 'custom-dialog';
-            dialog.innerHTML = `
-                <h3>添加新美食</h3>
-                <input type="text" id="foodName" placeholder="美食名称">
-                <select id="foodCategory">
-                    ${Object.keys(foodData).map(k => `<option value="${k}">${k}</option>`).join('')}
-                </select>
-                <div class="dialog-buttons">
-                    <button onclick="submitFood()">提交</button>
-                    <button onclick="closeDialog()">取消</button>
-                </div>
-            `;
-            document.body.appendChild(dialog);
-        }
-
-        function submitFood() {
-            const foodName = document.getElementById('foodName').value.trim();
-            const category = document.getElementById('foodCategory').value;
-
-            if (!foodName) {
-                alert('美食名称不能为空！');
-                return;
-            }
-
-            if (addCustomFood(foodName, category)) {
-                alert('添加成功！');
-                closeDialog();
-            } else {
-                alert('该美食已存在！');
-            }
-        }
-
-        function closeDialog() {
-            document.querySelector('.custom-dialog')?.remove();
-        }
 
         function addCustomFood(newFood, category) {
             if (!foodData[category].includes(newFood)) {
