@@ -18,6 +18,7 @@
             --card-bg: rgba(255, 255, 255, 0.95);
             --shadow: rgba(0, 0, 0, 0.1);
             --border: #eee;
+            --radius: 12px;
         }
 
         [data-theme="dark"] {
@@ -326,6 +327,79 @@
             margin-bottom: 1rem;
         }
 
+        /* 新增按钮样式 */
+        button {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transform: translateZ(0);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: var(--radius);
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 2px 8px -2px var(--primary);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px -2px var(--primary);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: var(--card-bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+            box-shadow: 0 4px 16px var(--shadow);
+        }
+
+        @keyframes btn-bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+        }
+
+        .btn-loading {
+            position: relative;
+            pointer-events: none;
+        }
+
+        .btn-loading::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: rgba(255,255,255,0.3);
+            animation: loading-shine 1.5s infinite;
+        }
+
+        @keyframes loading-shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        @keyframes ripple {
+            to {
+                transform: translate(-50%, -50%) scale(4);
+                opacity: 0;
+            }
+        }
+
         @media (max-width: 768px) {
             .container {
                 width: 100%;
@@ -414,20 +488,20 @@
         </div>
 
         <div class="card result-card">
-            <div class="result-text" id="result">点击按钮开始美食探索之旅</div>
+            <div class="result-text" id="result">点击下方按钮开始美食探索之旅</div>
         </div>
 
         <div class="controls">
-            <button class="btn-primary" onclick="startSelection()" aria-label="立即选择美食">
+            <button class="btn-primary btn" onclick="startSelection()" aria-label="立即选择美食">
                 <i class="fas fa-utensils"></i> 立即选择
             </button>
-            <button class="btn-secondary" onclick="toggleFavorite()" aria-label="收藏当前美食">
+            <button class="btn-secondary btn" onclick="toggleFavorite()" aria-label="收藏当前美食">
                 <i class="fas fa-heart"></i> 收藏
             </button>
-            <button class="btn-secondary" onclick="shareResult()" aria-label="分享当前美食">
+            <button class="btn-secondary btn" onclick="shareResult()" aria-label="分享当前美食">
                 <i class="fas fa-share"></i> 分享
             </button>
-            <button class="btn-secondary" onclick="clearHistory()" aria-label="清空历史记录">
+            <button class="btn-secondary btn" onclick="clearHistory()" aria-label="清空历史记录">
                 <i class="fas fa-trash"></i> 清空历史
             </button>
         </div>
@@ -459,11 +533,18 @@
 
         // 主题切换功能
         function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const root = document.documentElement;
+            root.style.transition = 'background 0.5s ease';
+            const currentTheme = root.getAttribute('data-theme');
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            document.documentElement.setAttribute('data-theme', newTheme);
+            
+            root.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
             updateThemeIcon(newTheme);
+            
+            setTimeout(() => {
+                root.style.transition = '';
+            }, 500);
         }
 
         function updateThemeIcon(theme) {
@@ -496,8 +577,8 @@
                     ${Object.keys(foodData).map(k => `<option value="${k}">${k}</option>`).join('')}
                 </select>
                 <div class="dialog-buttons">
-                    <button onclick="submitFood()">提交</button>
-                    <button onclick="closeDialog()">取消</button>
+                    <button class="btn" onclick="submitFood()">提交</button>
+                    <button class="btn btn-secondary" onclick="closeDialog()">取消</button>
                 </div>
             `;
 
@@ -543,6 +624,9 @@
 
         // 核心功能
         function startSelection() {
+            const btn = document.querySelector('[onclick="startSelection()"]');
+            btn.classList.add('btn-loading');
+            
             const activeCategory = document.querySelector('.category-tab.active').dataset.category;
             const candidates = foodData[activeCategory];
 
@@ -552,6 +636,7 @@
                 const result = getRandomFood(candidates);
                 displayResult(result);
                 addToHistory(result);
+                btn.classList.remove('btn-loading');
             }, 1200);
         }
 
@@ -766,6 +851,29 @@
                 const food = e.target.closest('.history-item').querySelector('span').textContent.replace('❤️ ', '');
                 removeFromFavorite(food);
             }
+        });
+
+        // 按钮波纹效果
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                let ripple = document.createElement('div');
+                ripple.style.cssText = `
+                    position: absolute;
+                    width: 20px;
+                    height: 20px;
+                    background: rgba(255,255,255,0.5);
+                    border-radius: 50%;
+                    transform: translate(-50%, -50%) scale(0);
+                    animation: ripple 0.6s ease-out;
+                `;
+                
+                const rect = btn.getBoundingClientRect();
+                ripple.style.left = `${e.clientX - rect.left}px`;
+                ripple.style.top = `${e.clientY - rect.top}px`;
+                
+                btn.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
         });
 
         // 数据源
