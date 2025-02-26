@@ -402,80 +402,53 @@
             }
         }
 
-     /* 新增骰子弹窗样式 */
-        .dice-dialog {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: var(--card-bg);
-            padding: 2rem;
-            border-radius: var(--radius);
-            box-shadow: 0 5px 15px var(--shadow);
-            z-index: 1002;
-            width: 300px;
-            text-align: center;
-            border: 1px solid var(--border);
-        }
+        @media (max-width: 768px) {
+            .container {
+                width: 100%;
+                padding: 1rem;
+                margin: 10px;
+                border-radius: 10px;
+            }
 
-        .dice-dialog::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: -1;
-        }
+            .title {
+                font-size: 1.8em;
+            }
 
-        .dice-container {
-            position: relative;
-            margin: 1rem 0;
-        }
+            .category-tabs {
+                gap: 4px;
+            }
 
-        .dice-face {
-            font-size: 6rem;
-            line-height: 1;
-            margin: 1rem 0;
-            transition: transform 0.5s ease-out;
-        }
+            .category-tab {
+                padding: 4px 8px;
+                font-size: 0.9em;
+            }
 
-        .dice-animation {
-            animation: diceRoll 1s ease-out;
-        }
+            .controls {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
 
-        @keyframes diceRoll {
-            0% { transform: rotate(0deg) scale(1); }
-            50% { transform: rotate(720deg) scale(1.2); }
-            100% { transform: rotate(1440deg) scale(1); }
-        }
+            .result-card {
+                min-height: 120px;
+                font-size: 1.2rem;
+            }
 
-        .dice-controls {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
+            .toolbox {
+                width: 130px;
+                right: -110px;
+                padding: 10px;
+            }
 
-        .dice-close-btn {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: none;
-            border: none;
-            color: var(--text);
-            cursor: pointer;
-            padding: 0.5rem;
-        }
+            .toolbox-toggle {
+                display: block;
+            }
 
-        .dice-close-btn:hover {
-            color: var(--primary);
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
+            .theme-toggle {
+                top: 10px;
+                right: 10px;
+                width: 35px;
+                height: 35px;
+            }
         }
     </style>
 </head>
@@ -774,94 +747,31 @@
             }
         }
 
-        // 骰子功能
-let isRolling = false;
-let diceDialog = null;
+        // 新增功能：掷骰子
+        function rollDice() {
+            const resultElement = document.getElementById('diceResult');
+            let frame = 0;
 
-function showDiceDialog() {
-    if (diceDialog) return; // 如果弹窗已经存在，则不再创建
+            function animateDice() {
+                if (frame < 10) {
+                    requestAnimationFrame(() => {
+                        resultElement.textContent = Math.floor(Math.random() * 6) + 1;
+                        frame++;
+                        animateDice();
+                    });
+                } else {
+                    const final = Math.floor(Math.random() * 6) + 1;
+                    resultElement.textContent = final;
+                    resultElement.style.transform = 'scale(1.2)';
+                    setTimeout(() => {
+                        resultElement.style.transform = 'scale(1)';
+                        alert(`骰子结果：${final}`);
+                    }, 200);
+                }
+            }
 
-    diceDialog = document.createElement('div');
-    diceDialog.className = 'dice-dialog';
-    diceDialog.innerHTML = `
-        <button class="dice-close-btn" onclick="closeDiceDialog()">
-            <i class="fas fa-times"></i>
-        </button>
-        <h3>🎲 掷骰子</h3>
-        <div class="dice-container">
-            <div class="dice-face" id="diceFace">⚀</div>
-        </div>
-        <div class="dice-controls">
-            <button class="btn" id="rollBtn" onclick="rollDice()">掷骰子</button>
-        </div>
-    `;
-
-    document.body.appendChild(diceDialog);
-    document.addEventListener('keydown', handleDiceDialogKeydown);
-}
-
-function closeDiceDialog() {
-    if (isRolling) return; // 防止在投掷过程中关闭
-
-    if (diceDialog) {
-        diceDialog.remove();
-        diceDialog = null; // 清除引用
-        document.removeEventListener('keydown', handleDiceDialogKeydown);
-    }
-}
-
-function handleDiceDialogKeydown(e) {
-    if (e.key === 'Escape' && !isRolling) {
-        closeDiceDialog();
-    }
-}
-
-function rollDice() {
-    if (isRolling || !diceDialog) return;
-
-    const diceFace = document.getElementById('diceFace');
-    const rollBtn = document.getElementById('rollBtn');
-    if (!diceFace || !rollBtn) return;
-
-    isRolling = true;
-    rollBtn.disabled = true;
-
-    const diceFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
-    const result = Math.floor(Math.random() * 6);
-
-    diceFace.classList.add('dice-animation');
-
-    let frame = 0;
-    const interval = setInterval(() => {
-        diceFace.textContent = diceFaces[Math.floor(Math.random() * 6)];
-        frame++;
-        if (frame > 10) {
-            clearInterval(interval);
-            diceFace.textContent = diceFaces[result];
-            diceFace.classList.remove('dice-animation');
-
-            setTimeout(() => {
-                isRolling = false;
-                rollBtn.disabled = false;
-                showDiceResult(result + 1);
-            }, 300);
+            animateDice();
         }
-    }, 100);
-}
-
-function showDiceResult(result) {
-    setTimeout(() => {
-        alert(`骰子结果：${result}`);
-    }, 300);
-}
-
-        // 修改工具箱中的骰子按钮
-        document.querySelector('.toolbox .btn-secondary[onclick="rollDice()"]')
-            .setAttribute('onclick', 'showDiceDialog()');
-
-        // 修改工具箱中的骰子按钮
-        document.querySelector('.toolbox .btn-secondary[onclick="rollDice()"]')
-            .setAttribute('onclick', 'showDiceDialog()');
 
         // 工具栏交互逻辑
         function toggleToolbox() {
