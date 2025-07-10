@@ -450,6 +450,139 @@
                 height: 35px;
             }
         }
+
+        /* 掷骰子相关样式 */
+        .dice-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border-radius: var(--radius);
+            transition: all 0.3s ease;
+        }
+
+        .dice-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .dice-dialog {
+            text-align: center;
+            display: none;
+        }
+
+        .dice-display {
+            padding: 2rem 0;
+        }
+
+        .dice {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+            background: var(--primary);
+            color: white;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 骰子点数样式 */
+        .dice-dot {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            display: none;
+        }
+
+        .dice[data-value="1"] .dot-center { display: block; }
+        .dice[data-value="2"] .dot-top-left, .dice[data-value="2"] .dot-bottom-right { display: block; }
+        .dice[data-value="3"] .dot-top-left, .dice[data-value="3"] .dot-center, .dice[data-value="3"] .dot-bottom-right { display: block; }
+        .dice[data-value="4"] .dot-top-left, .dice[data-value="4"] .dot-top-right, .dice[data-value="4"] .dot-bottom-left, .dice[data-value="4"] .dot-bottom-right { display: block; }
+        .dice[data-value="5"] .dot-top-left, .dice[data-value="5"] .dot-top-right, .dice[data-value="5"] .dot-center, .dice[data-value="5"] .dot-bottom-left, .dice[data-value="5"] .dot-bottom-right { display: block; }
+        .dice[data-value="6"] .dot-top-left, .dice[data-value="6"] .dot-top-right, .dice[data-value="6"] .dot-middle-left, .dice[data-value="6"] .dot-middle-right, .dice[data-value="6"] .dot-bottom-left, .dice[data-value="6"] .dot-bottom-right { display: block; }
+
+        .dot-top-left { top: 20px; left: 20px; }
+        .dot-top-right { top: 20px; right: 20px; }
+        .dot-middle-left { top: 50px; left: 20px; }
+        .dot-middle-right { top: 50px; right: 20px; }
+        .dot-bottom-left { bottom: 20px; left: 20px; }
+        .dot-bottom-right { bottom: 20px; right: 20px; }
+        .dot-center { top: 50px; left: 50px; }
+
+        /* 掷骰子动画 */
+        @keyframes dice-roll {
+            0% { transform: rotate(0deg) scale(1); }
+            20% { transform: rotate(30deg) scale(1.1); }
+            40% { transform: rotate(-30deg) scale(1.05); }
+            60% { transform: rotate(15deg) scale(1.1); }
+            80% { transform: rotate(-15deg) scale(1.05); }
+            100% { transform: rotate(0deg) scale(1); }
+        }
+
+        .dice-rolling {
+            animation: dice-roll 0.2s infinite;
+        }
+
+        /* 结果显示动画 */
+        @keyframes dice-reveal {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .dice-reveal {
+            animation: dice-reveal 0.5s ease-out;
+        }
+
+        /* 新增的食物卡片样式 */
+        .food-card {
+            position: relative;
+            padding: 1rem;
+            border-radius: 10px;
+            background: var(--card-bg);
+            box-shadow: 0 4px 6px var(--shadow);
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .food-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 12px var(--shadow);
+        }
+
+        .food-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary);
+            border-radius: 10px 0 0 10px;
+        }
+
+        .food-card h3 {
+            margin: 0 0 0.5rem;
+            color: var(--primary);
+        }
+
+        .food-card p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 
@@ -465,10 +598,40 @@
     <div class="toolbox" id="toolbox" role="toolbar">
         <h3>🔧 小工具</h3>
         <div class="dice-container">
-            <button class="btn-secondary" onclick="rollDice()" aria-label="掷骰子">
+            <button class="btn-secondary dice-btn" onclick="openDiceDialog()" aria-label="掷骰子">
                 <i class="fas fa-dice"></i> 掷骰子
             </button>
-            <div id="diceResult"></div>
+        </div>
+    </div>
+
+    <!-- 掷骰子弹窗 -->
+    <div class="dice-dialog custom-dialog" id="diceDialog">
+        <div class="dialog-header">
+            <h3>🎲 掷骰子</h3>
+            <button class="close-btn" onclick="closeDiceDialog()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="dice-display">
+            <div id="diceAnimationContainer">
+                <div class="dice">
+                    <div class="dice-dot dot-top-left"></div>
+                    <div class="dice-dot dot-top-right"></div>
+                    <div class="dice-dot dot-middle-left"></div>
+                    <div class="dice-dot dot-middle-right"></div>
+                    <div class="dice-dot dot-bottom-left"></div>
+                    <div class="dice-dot dot-bottom-right"></div>
+                    <div class="dice-dot dot-center"></div>
+                </div>
+            </div>
+        </div>
+        <div class="dialog-buttons">
+            <button class="btn" onclick="rollDiceInDialog()" aria-label="开始掷骰子">
+                <i class="fas fa-play"></i> 开始
+            </button>
+            <button class="btn btn-secondary" onclick="closeDiceDialog()">
+                <i class="fas fa-times"></i> 关闭
+            </button>
         </div>
     </div>
 
@@ -527,7 +690,7 @@
         // 数据存储
         let history = JSON.parse(localStorage.getItem('foodHistory')) || [];
         let favorites = JSON.parse(localStorage.getItem('foodFavorites')) || [];
-        let isDialogOpen = false;
+        let activeDialog = null;
 
         // 初始化显示
         updateHistoryDisplay();
@@ -561,9 +724,7 @@
 
         // 自定义美食弹窗
         function showCustomDialog() {
-            if (isDialogOpen) return;
-
-            isDialogOpen = true;
+            if (activeDialog) return;
 
             const dialog = document.createElement('div');
             dialog.className = 'custom-dialog';
@@ -576,7 +737,7 @@
                 </div>
                 <input type="text" id="foodName" placeholder="美食名称">
                 <select id="foodCategory">
-                    ${Object.keys(foodData).map(k => `<option value="${k}">${k}</option>`).join('')}
+                    ${Object.keys(foodData).filter(k => k !== 'all').map(k => `<option value="${k}">${k}</option>`).join('')}
                 </select>
                 <div class="dialog-buttons">
                     <button class="btn" onclick="submitFood()">提交</button>
@@ -590,20 +751,24 @@
                 }
             });
 
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    closeDialog();
-                }
-            });
+            document.addEventListener('keydown', handleEscKey);
 
             document.body.appendChild(dialog);
+            activeDialog = dialog;
         }
 
         function closeDialog() {
-            const dialog = document.querySelector('.custom-dialog');
-            if (dialog) {
-                dialog.remove();
-                isDialogOpen = false;
+            if (activeDialog) {
+                activeDialog.remove();
+                activeDialog = null;
+                document.removeEventListener('keydown', handleEscKey);
+            }
+        }
+
+        function handleEscKey(e) {
+            if (e.key === 'Escape') {
+                closeDialog();
+                closeDiceDialog();
             }
         }
 
@@ -612,16 +777,51 @@
             const category = document.getElementById('foodCategory').value;
 
             if (!foodName) {
-                alert('美食名称不能为空！');
+                showToast('美食名称不能为空！');
                 return;
             }
 
             if (addCustomFood(foodName, category)) {
-                alert('添加成功！');
+                showToast('添加成功！');
                 closeDialog();
             } else {
-                alert('该美食已存在！');
+                showToast('该美食已存在！');
             }
+        }
+
+        // 显示提示消息
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: var(--primary);
+                color: white;
+                padding: 10px 20px;
+                border-radius: 20px;
+                box-shadow: 0 4px 12px var(--shadow);
+                z-index: 2000;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            // 显示动画
+            setTimeout(() => {
+                toast.style.opacity = '1';
+            }, 10);
+            
+            // 自动消失
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 2000);
         }
 
         // 核心功能
@@ -631,6 +831,12 @@
             
             const activeCategory = document.querySelector('.category-tab.active').dataset.category;
             const candidates = foodData[activeCategory];
+
+            if (!candidates || candidates.length === 0) {
+                showToast('该分类下没有美食可选！');
+                btn.classList.remove('btn-loading');
+                return;
+            }
 
             showLoadingAnimation();
 
@@ -694,13 +900,18 @@
         // 收藏功能
         function toggleFavorite() {
             const currentFood = document.querySelector('#result h2')?.textContent.split('：')[1];
-            if (!currentFood) return;
+            if (!currentFood) {
+                showToast('请先选择美食！');
+                return;
+            }
 
             const index = favorites.indexOf(currentFood);
             if (index > -1) {
                 favorites.splice(index, 1);
+                showToast('已取消收藏');
             } else {
                 favorites.push(currentFood);
+                showToast('收藏成功！');
             }
             localStorage.setItem('foodFavorites', JSON.stringify(favorites));
             updateFavoriteDisplay();
@@ -722,13 +933,14 @@
             favorites = favorites.filter(item => item !== food);
             localStorage.setItem('foodFavorites', JSON.stringify(favorites));
             updateFavoriteDisplay();
+            showToast('已移除收藏');
         }
 
-        // 新增功能：分享
+        // 分享功能
         function shareResult() {
             const result = document.querySelector('#result h2')?.textContent;
             if (!result) {
-                alert('请先选择美食！');
+                showToast('请先选择美食！');
                 return;
             }
             const shareData = {
@@ -742,35 +954,92 @@
             } else {
                 const text = `${shareData.text} - ${shareData.url}`;
                 navigator.clipboard.writeText(text)
-                    .then(() => alert('链接已复制到剪贴板'))
+                    .then(() => showToast('链接已复制到剪贴板'))
                     .catch(() => prompt('请手动复制链接：', text));
             }
         }
 
-        // 新增功能：掷骰子
-        function rollDice() {
-            const resultElement = document.getElementById('diceResult');
-            let frame = 0;
-
-            function animateDice() {
-                if (frame < 10) {
-                    requestAnimationFrame(() => {
-                        resultElement.textContent = Math.floor(Math.random() * 6) + 1;
-                        frame++;
-                        animateDice();
-                    });
-                } else {
-                    const final = Math.floor(Math.random() * 6) + 1;
-                    resultElement.textContent = final;
-                    resultElement.style.transform = 'scale(1.2)';
-                    setTimeout(() => {
-                        resultElement.style.transform = 'scale(1)';
-                        alert(`骰子结果：${final}`);
-                    }, 200);
+        // 掷骰子弹窗相关函数
+        function openDiceDialog() {
+            if (activeDialog) return;
+            
+            const dialog = document.getElementById('diceDialog');
+            dialog.style.display = 'block';
+            activeDialog = dialog;
+            
+            // 初始化骰子显示
+            initDiceDisplay();
+            
+            // 点击外部关闭
+            dialog.addEventListener('click', (e) => {
+                if (e.target === dialog) {
+                    closeDiceDialog();
                 }
-            }
+            });
+        }
 
-            animateDice();
+        function closeDiceDialog() {
+            const dialog = document.getElementById('diceDialog');
+            if (dialog && dialog.style.display !== 'none') {
+                dialog.style.display = 'none';
+                activeDialog = null;
+            }
+        }
+
+        function initDiceDisplay() {
+            const container = document.getElementById('diceAnimationContainer');
+            container.innerHTML = `
+                <div class="dice">
+                    <div class="dice-dot dot-top-left"></div>
+                    <div class="dice-dot dot-top-right"></div>
+                    <div class="dice-dot dot-middle-left"></div>
+                    <div class="dice-dot dot-middle-right"></div>
+                    <div class="dice-dot dot-bottom-left"></div>
+                    <div class="dice-dot dot-bottom-right"></div>
+                    <div class="dice-dot dot-center"></div>
+                </div>
+            `;
+        }
+
+        function rollDiceInDialog() {
+            const dice = document.querySelector('.dice');
+            const rollBtn = document.querySelector('.dice-dialog .btn:not(.btn-secondary)');
+            
+            // 禁用按钮防止重复点击
+            rollBtn.disabled = true;
+            rollBtn.classList.add('btn-loading');
+            
+            // 初始化骰子
+            dice.removeAttribute('data-value');
+            dice.classList.add('dice-rolling');
+            dice.classList.remove('dice-reveal');
+            
+            // 模拟骰子滚动效果
+            let rolls = 0;
+            const maxRolls = 20; // 滚动次数
+            
+            const rollInterval = setInterval(() => {
+                // 随机显示不同点数
+                const randomValue = Math.floor(Math.random() * 6) + 1;
+                dice.setAttribute('data-value', randomValue);
+                rolls++;
+                
+                if (rolls >= maxRolls) {
+                    clearInterval(rollInterval);
+                    
+                    // 最终结果
+                    setTimeout(() => {
+                        dice.classList.remove('dice-rolling');
+                        const finalValue = Math.floor(Math.random() * 6) + 1;
+                        dice.setAttribute('data-value', finalValue);
+                        dice.classList.add('dice-reveal');
+                        
+                        // 启用按钮
+                        rollBtn.disabled = false;
+                        rollBtn.classList.remove('btn-loading');
+                    }, 300);
+                }
+            }, 100);
         }
 
         // 工具栏交互逻辑
@@ -814,20 +1083,29 @@
         });
 
         function addCustomFood(newFood, category) {
-            if (!foodData[category].includes(newFood)) {
-                foodData[category].push(newFood);
-                if (category !== 'all') {
-                    foodData.all.push(newFood);
-                }
-                return true;
+            if (!foodData[category]) {
+                showToast('无效的分类！');
+                return false;
             }
-            return false;
+            
+            if (foodData[category].includes(newFood)) {
+                return false;
+            }
+            
+            foodData[category].push(newFood);
+            if (category !== 'all' && !foodData.all.includes(newFood)) {
+                foodData.all.push(newFood);
+            }
+            return true;
         }
 
         function clearHistory() {
-            history = [];
-            localStorage.setItem('foodHistory', JSON.stringify(history));
-            updateHistoryDisplay();
+            if (confirm('确定要清空历史记录吗？')) {
+                history = [];
+                localStorage.setItem('foodHistory', JSON.stringify(history));
+                updateHistoryDisplay();
+                showToast('历史记录已清空');
+            }
         }
 
         function showLoadingAnimation() {
